@@ -76,7 +76,7 @@ Future<void> initializeDatabase() async {
     version: 1,
     onCreate: (db, version) async {
       await db.execute(
-          'CREATE TABLE student (id INTEGER PRIMARY KEY, name TEXT, age TEXT, guardian TEXT, contact TEXT)');
+          'CREATE TABLE student (id INTEGER PRIMARY KEY, name TEXT, age TEXT, guardian TEXT, contact TEXT,)');
     },
   );
   await getData();

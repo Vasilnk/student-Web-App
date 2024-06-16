@@ -99,11 +99,11 @@ class _HomePageState extends State<HomePage> {
 
   Widget buildGridView(List<StudentModel> students) {
     return GridView.builder(
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2, // Number of columns
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
         crossAxisSpacing: 20.0,
         mainAxisSpacing: 20.0,
-        childAspectRatio: 1, // Adjust this value to control the item height
+        childAspectRatio: 1,
       ),
       itemCount: students.length,
       padding: EdgeInsets.all(20),
@@ -119,8 +119,26 @@ class _HomePageState extends State<HomePage> {
                       builder: (context) => ProfilePage(student)));
             },
             child: GridTile(
-              header: Align(
-                alignment: Alignment.topRight,
+              header: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  SizedBox(height: 10),
+                  CircleAvatar(
+                    radius: 30,
+                    // backgroundImage: student.imagePath != null
+                    //     ? FileImage(File(student.imagePath!))
+                    //     : null,
+                    // child: student.imagePath == null
+                    //     ? const Icon(Icons.person)
+                    //     : null,
+                  ),
+                  SizedBox(height: 10),
+                  Text(student.name),
+                  // Text('Age: ${student.age}'),
+                ],
+              ),
+              child: Align(
+                alignment: Alignment.bottomRight,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -171,23 +189,6 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ],
                 ),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircleAvatar(
-                    radius: 30,
-                    // backgroundImage: student.imagePath != null
-                    //     ? FileImage(File(student.imagePath!))
-                    //     : null,
-                    // child: student.imagePath == null
-                    //     ? const Icon(Icons.person)
-                    //     : null,
-                  ),
-                  SizedBox(height: 10),
-                  Text(student.name),
-                  // Text('Age: ${student.age}'),
-                ],
               ),
             ),
           ),

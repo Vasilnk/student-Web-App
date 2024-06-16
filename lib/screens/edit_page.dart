@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:student_app/dbModel/db_model.dart';
@@ -19,6 +21,16 @@ class _EditStudentPageState extends State<EditStudentPage> {
   final inputGuardian = TextEditingController();
   final inputContact = TextEditingController();
   final formKey = GlobalKey<FormState>();
+  final ImagePicker _picker = ImagePicker();
+  String? _imagePath;
+  Future<void> _pickImage(ImageSource source) async {
+    final pickedFile = await _picker.pickImage(source: source);
+    if (pickedFile != null) {
+      setState(() {
+        _imagePath = pickedFile.path;
+      });
+    }
+  }
 
   @override
   void initState() {
@@ -82,16 +94,62 @@ class _EditStudentPageState extends State<EditStudentPage> {
             padding: EdgeInsets.all(40),
             child: Column(
               children: [
-                GestureDetector(
-                  // onTap: () => _pickImage(ImageSource.gallery),
+                // GestureDetector(
+                // onTap: () => _pickImage(ImageSource.gallery),
+                // child: CircleAvatar(
+                // radius: 50,
+                // backgroundImage: _imagePath != null
+                // ? FileImage(File(_imagePath!))
+                // : null,
+                // child: _imagePath == null
+                // ? Icon(Icons.camera_alt, size: 50)
+                // : null,
+                // ),
+                // ),
+                InkWell(
+                  onTap: () {
+                    showModalBottomSheet(
+                        context: context,
+                        builder: (builder) {
+                          return SizedBox(
+                            width: double.infinity,
+                            height: 150,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                InkWell(
+                                  child: Icon(
+                                    Icons.image,
+                                    size: 60,
+                                  ),
+                                  onTap: () {
+                                    _pickImage(ImageSource.gallery);
+                                    Navigator.pop(context);
+                                  },
+                                ),
+                                InkWell(
+                                  child: Icon(
+                                    Icons.camera_alt,
+                                    size: 60,
+                                  ),
+                                  onTap: () {
+                                    _pickImage(ImageSource.camera);
+                                    Navigator.pop(context);
+                                  },
+                                ),
+                              ],
+                            ),
+                          );
+                        });
+                    // _pickImage(ImageSource.camera);
+                  },
                   child: CircleAvatar(
-                    radius: 50,
-                    // backgroundImage: _imagePath != null
-                    // ? FileImage(File(_imagePath!))
-                    // : null,
-                    // child: _imagePath == null
-                    // ? Icon(Icons.camera_alt, size: 50)
-                    // : null,
+                    radius: 80,
+                    backgroundImage: _imagePath != null
+                        ? FileImage(File(_imagePath!))
+                        : null,
+                    // child:
+                    // _imagePath == null ? Icon(Icons.camera_alt, size: 50) : null,
                   ),
                 ),
                 Form(

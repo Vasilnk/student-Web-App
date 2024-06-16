@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:student_app/dbHelper/db_functions.dart';
 import 'package:student_app/dbModel/db_model.dart';
@@ -41,20 +42,56 @@ class _AddStudentPageState extends State<AddStudentPage> {
       body: ListView(
         padding: EdgeInsets.all(40),
         children: [
-          GestureDetector(
-            onTap: () => _pickImage(ImageSource.gallery),
+          InkWell(
+            onTap: () {
+              showModalBottomSheet(
+                  context: context,
+                  builder: (builder) {
+                    return SizedBox(
+                      width: double.infinity,
+                      height: 150,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          InkWell(
+                            child: Icon(
+                              Icons.image,
+                              size: 60,
+                            ),
+                            onTap: () {
+                              _pickImage(ImageSource.gallery);
+                              Navigator.pop(context);
+                            },
+                          ),
+                          InkWell(
+                            child: Icon(
+                              Icons.camera_alt,
+                              size: 60,
+                            ),
+                            onTap: () {
+                              _pickImage(ImageSource.camera);
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ],
+                      ),
+                    );
+                  });
+              // _pickImage(ImageSource.camera);
+            },
             child: CircleAvatar(
-              radius: 50,
+              radius: 80,
               backgroundImage:
                   _imagePath != null ? FileImage(File(_imagePath!)) : null,
-              child:
-                  _imagePath == null ? Icon(Icons.camera_alt, size: 50) : null,
+              // child:
+              // _imagePath == null ? Icon(Icons.camera_alt, size: 50) : null,
             ),
           ),
           Form(
             key: formKey,
             child: Column(
               children: [
+                SizedBox(height: 30),
                 TextFormField(
                     controller: inputName,
                     decoration: InputDecoration(
