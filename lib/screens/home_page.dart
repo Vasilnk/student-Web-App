@@ -13,7 +13,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  bool isGridView = true;
+  bool isGridView = false;
   TextEditingController searchController = TextEditingController();
   List<StudentModel> filteredStudents = [];
 
@@ -62,10 +62,10 @@ class _HomePageState extends State<HomePage> {
             padding: const EdgeInsets.all(8.0),
             child: TextField(
               controller: searchController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 hintText: 'Search',
-                suffixIcon: const Icon(Icons.search),
+                suffixIcon: Icon(Icons.search),
               ),
             ),
           ),
@@ -101,16 +101,18 @@ class _HomePageState extends State<HomePage> {
     return GridView.builder(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        crossAxisSpacing: 20.0,
-        mainAxisSpacing: 20.0,
+        crossAxisSpacing: 10.0,
+        mainAxisSpacing: 10.0,
         childAspectRatio: 1,
       ),
       itemCount: students.length,
-      padding: EdgeInsets.all(20),
+      padding: EdgeInsets.all(15),
       itemBuilder: (context, index) {
         final student = students[index];
         return Container(
-          color: Colors.blue[200],
+          decoration: BoxDecoration(
+              color: Colors.green[200],
+              borderRadius: BorderRadius.circular(20)),
           child: InkWell(
             onTap: () {
               Navigator.push(
@@ -124,16 +126,17 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   SizedBox(height: 10),
                   CircleAvatar(
-                    radius: 30,
-                    // backgroundImage: student.imagePath != null
-                    //     ? FileImage(File(student.imagePath!))
-                    //     : null,
-                    // child: student.imagePath == null
-                    //     ? const Icon(Icons.person)
-                    //     : null,
+                    radius: 40,
+                    backgroundImage: student.image != null
+                        ? MemoryImage(student.image!)
+                        : null,
+                    child:
+                        student.image == null ? const Icon(Icons.person) : null,
                   ),
-                  SizedBox(height: 10),
-                  Text(student.name),
+                  Text(
+                    student.name,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   // Text('Age: ${student.age}'),
                 ],
               ),
@@ -202,7 +205,12 @@ class _HomePageState extends State<HomePage> {
       itemBuilder: (context, index) {
         final student = students[index];
         return Container(
-          color: Colors.blue[200],
+          margin: const EdgeInsets.symmetric(horizontal: 7),
+          decoration: BoxDecoration(
+              color: Colors.green[200],
+              borderRadius: BorderRadius.circular(15)),
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          height: 100,
           child: ListTile(
             onTap: () {
               Navigator.push(
@@ -210,15 +218,16 @@ class _HomePageState extends State<HomePage> {
                   MaterialPageRoute(
                       builder: (context) => ProfilePage(student)));
             },
-            title: Text(student.name),
+            title: Text(
+              student.name,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
             leading: CircleAvatar(
-                // backgroundImage: student.imagePath != null
-                //     ? FileImage(File(student.imagePath!))
-                //     : null,
-                // child: student.imagePath == null
-                //     ? const Icon(Icons.person)
-                //     : null,
-                ),
+              radius: 30,
+              backgroundImage:
+                  student.image != null ? MemoryImage(student.image!) : null,
+              child: student.image == null ? const Icon(Icons.person) : null,
+            ),
             // subtitle: Text('Age: ${student.age}'),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
@@ -273,7 +282,10 @@ class _HomePageState extends State<HomePage> {
           ),
         );
       },
-      separatorBuilder: (context, index) => const Divider(),
+      separatorBuilder: (context, index) => const Divider(
+        height: 5,
+        color: Colors.white,
+      ),
       itemCount: students.length,
     );
   }
