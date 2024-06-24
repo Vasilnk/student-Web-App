@@ -76,6 +76,11 @@ class _HomePageState extends State<HomePage> {
                 if (searchController.text.isEmpty) {
                   filteredStudents = students;
                 }
+                if (filteredStudents.isEmpty) {
+                  return const Center(
+                    child: Text('No students added'),
+                  );
+                }
                 return isGridView
                     ? buildGridView(filteredStudents)
                     : buildListView(filteredStudents);
@@ -109,6 +114,7 @@ class _HomePageState extends State<HomePage> {
       padding: EdgeInsets.all(15),
       itemBuilder: (context, index) {
         final student = students[index];
+
         return Container(
           decoration: BoxDecoration(
               color: Colors.green[200],
@@ -124,7 +130,7 @@ class _HomePageState extends State<HomePage> {
               header: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   CircleAvatar(
                     radius: 40,
                     backgroundImage: student.image != null
