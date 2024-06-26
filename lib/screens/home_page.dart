@@ -34,8 +34,7 @@ class _HomePageState extends State<HomePage> {
     final query = searchController.text.toLowerCase();
     setState(() {
       filteredStudents = studentListNotifier.value
-          .where(
-              (student) => (student.name?.toLowerCase() ?? '').contains(query))
+          .where((student) => (student.name.toLowerCase()).contains(query))
           .toList();
     });
   }
@@ -111,7 +110,7 @@ class _HomePageState extends State<HomePage> {
         childAspectRatio: 1,
       ),
       itemCount: students.length,
-      padding: EdgeInsets.all(15),
+      padding: const EdgeInsets.all(15),
       itemBuilder: (context, index) {
         final student = students[index];
 

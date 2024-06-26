@@ -40,7 +40,7 @@ Future<void> addStudent(StudentModel student) async {
 }
 
 Future<void> getData() async {
-  final values = await db.rawQuery('SELECT * FROM student');
+  final values = await db.rawQuery('SELECT * FROM student ');
   studentListNotifier.value = values.map((map) {
     return StudentModel.fromMap(map);
   }).toList();
@@ -55,9 +55,8 @@ Future<void> deleteStudent(int id) async {
 }
 
 Future<void> updateStudent(StudentModel updatedStudent) async {
-  print('in function');
   try {
-    int count = await db.rawUpdate(
+    await db.rawUpdate(
         'UPDATE student SET name = ?, age = ?, guardian = ?, contact = ?, image = ? WHERE id = ?',
         [
           updatedStudent.name,
@@ -67,6 +66,7 @@ Future<void> updateStudent(StudentModel updatedStudent) async {
           updatedStudent.image,
           updatedStudent.id
         ]);
+
     await getData();
   } catch (e) {
     print('Error during update: $e');
