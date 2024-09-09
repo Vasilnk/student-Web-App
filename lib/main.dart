@@ -1,10 +1,21 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
-import 'package:student_app/screens/home_page.dart';
-import 'package:student_app/dbHelper/db_functions.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:student_app/database/db_model.dart';
+import 'package:student_app/screens/login.dart';
+import 'package:student_app/screens/splash_screen.dart';
+
+import 'screens/home_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await initializeDatabase();
+  await Hive.initFlutter();
+  if (!Hive.isAdapterRegistered(StudentDBModelAdapter().typeId)) {
+    Hive.registerAdapter(StudentDBModelAdapter());
+  }
+  await Hive.openBox<StudentDBModel>('students');
+  // await Hive.openBox<Uint8List>('image');
   runApp(const MyApp());
 }
 
@@ -16,12 +27,17 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       theme: ThemeData(
           appBarTheme: const AppBarTheme(
-              centerTitle: true,
-              color: Colors.green,
-              titleTextStyle:
-                  TextStyle(fontWeight: FontWeight.bold, fontSize: 25))),
+        // centerTitle: true,
+
+        color: Color.fromARGB(255, 83, 128, 79),
+        // color: Color.fromARGB(255, 226, 224, 224),
+        titleTextStyle: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 25,
+            color: Color.fromARGB(255, 46, 42, 42)),
+      )),
       debugShowCheckedModeBanner: false,
-      home: HomePage(),
+      home: const SplashScreen(),
     );
   }
 }

@@ -1,69 +1,75 @@
 import 'package:flutter/material.dart';
-import 'package:student_app/database/db_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class ProfilePage extends StatelessWidget {
-  final StudentDBModel student;
+class SchoolProfileScreen extends StatefulWidget {
+  const SchoolProfileScreen({super.key});
 
-  const ProfilePage(this.student, {super.key});
+  @override
+  _SchoolProfileScreenState createState() => _SchoolProfileScreenState();
+}
+
+class _SchoolProfileScreenState extends State<SchoolProfileScreen> {
+  String? schoolId;
+  String? schoolName;
+  final List<String> title = ['School ID', 'School Name'];
+  late List<String> details;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSchoolData();
+  }
+
+  // Load school data from SharedPreferences
+  void _loadSchoolData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      schoolId = prefs.getString('schoolId') ?? 'N/A';
+      schoolName = prefs.getString('schoolName') ?? 'N/A';
+      details = [schoolId!, schoolName!];
+    });
+  }
+
+  final TextStyle titleStyle = const TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.bold,
+    color: Colors.black,
+  );
+
+  final TextStyle detailStyle = const TextStyle(
+    fontSize: 16,
+    color: Colors.black54,
+  );
 
   @override
   Widget build(BuildContext context) {
-    final List<String> details = [
-      student.name,
-      student.age,
-      student.classNumber,
-      student.division,
-      student.guardian,
-      student.contact
-    ];
-
-    const List<String> title = [
-      'Name',
-      'Age',
-      'Class',
-      'Division',
-      'Guardian',
-      'Phone'
-    ];
-
-    const titleStyle = TextStyle(
-      fontSize: 18,
-      color: Colors.black54,
-      fontWeight: FontWeight.bold,
-    );
-
-    const detailStyle = TextStyle(
-      fontSize: 18,
-      color: Colors.black54,
-    );
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),
       ),
       body: Container(
-        decoration:
-            const BoxDecoration(color: Color.fromARGB(255, 226, 224, 224)),
+        decoration: const BoxDecoration(
+          color: Color.fromARGB(255, 226, 224, 224),
+        ),
         child: ListView(
           padding: const EdgeInsets.all(16.0),
           children: [
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                CircleAvatar(
+                // Profile Image
+                const CircleAvatar(
                   radius: 80,
-                  backgroundImage: student.image != null
-                      ? MemoryImage(student.image!)
-                      : null,
-                  child: student.image == null
-                      ? const Icon(Icons.person,
-                          size: 80, color: Colors.white70)
-                      : null,
+                  backgroundImage: AssetImage('assets/images/school.jpeg'),
+                  child: null, // Optionally add icon if the image is null
                 ),
-                const SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 150),
+                const SizedBox(height: 40),
+
+                // Profile Information Card
+                Center(
                   child: Container(
+                    height: 200,
+                    width: 400,
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(15),
@@ -92,7 +98,7 @@ class ProfilePage extends StatelessWidget {
                               height: 30,
                               thickness: 1,
                             ),
-                        ]
+                        ],
                       ],
                     ),
                   ),

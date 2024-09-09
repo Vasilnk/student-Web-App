@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:student_app/dbHelper/db_functions.dart';
-import 'package:student_app/dbModel/db_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:student_app/database/db_functions.dart';
+import 'package:student_app/database/db_model.dart';
+import 'package:student_app/screens/about_page.dart';
 import 'package:student_app/screens/add_page.dart';
-import 'package:student_app/screens/edit_page.dart';
-import 'package:student_app/screens/student_profile.dart';
+import 'package:student_app/screens/grid_view.dart';
+import 'package:student_app/screens/list_view.dart';
+import 'package:student_app/screens/logout.dart';
+import 'package:student_app/screens/privacy_policy.dart';
+import 'package:student_app/screens/profile.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -15,12 +20,15 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   bool isGridView = false;
   TextEditingController searchController = TextEditingController();
-  List<StudentModel> filteredStudents = [];
+  List<StudentDBModel> filteredStudents = [];
+  String? schoolName;
 
   @override
   void initState() {
     super.initState();
+    getStudents();
     searchController.addListener(_filterStudents);
+    get();
   }
 
   @override
@@ -30,268 +38,206 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
+  get() async {
+    SharedPreferences sharedPreference = await SharedPreferences.getInstance();
+    final school = sharedPreference.get('schoolName');
+    setState(() {
+      schoolName = school.toString();
+    });
+  }
+
   void _filterStudents() {
     final query = searchController.text.toLowerCase();
     setState(() {
       filteredStudents = studentListNotifier.value
-          .where((student) => (student.name.toLowerCase()).contains(query))
+          .where((student) => student.name.toLowerCase().contains(query))
           .toList();
     });
   }
 
+  final List<Map<String, dynamic>> sidePanelItems = [
+    {
+      'icon': Icons.person,
+      'title': 'Profile',
+      'screen': const SchoolProfileScreen()
+    },
+    {
+      'icon': Icons.grid_view_sharp,
+      'title': 'Grid view',
+    },
+    {
+      'icon': Icons.logout_outlined,
+      'title': 'Log Out',
+    },
+    {
+      'icon': Icons.privacy_tip,
+      'title': 'Privacy and Policy',
+      'screen': const PrivacyPolicyPage()
+    },
+    {'icon': Icons.info, 'title': 'About', 'screen': const AboutPage()}
+  ];
+  bool switchOn = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Students'),
-        actions: [
-          IconButton(
-            icon: Icon(isGridView ? Icons.view_list : Icons.grid_view),
-            onPressed: () {
-              setState(() {
-                isGridView = !isGridView;
-              });
-            },
-          ),
-        ],
+        title: const Text('Home'),
       ),
-      body: Column(
+      body: Row(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              controller: searchController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: 'Search',
-                suffixIcon: Icon(Icons.search),
-              ),
-            ),
-          ),
-          Expanded(
-            child: ValueListenableBuilder<List<StudentModel>>(
-              valueListenable: studentListNotifier,
-              builder: (context, students, child) {
-                if (searchController.text.isEmpty) {
-                  filteredStudents = students;
-                }
-                if (filteredStudents.isEmpty) {
-                  return const Center(
-                    child: Text('No students added'),
-                  );
-                }
-                return isGridView
-                    ? buildGridView(filteredStudents)
-                    : buildListView(filteredStudents);
-              },
-            ),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => AddStudentPage()),
-          );
-        },
-        child: const Icon(Icons.add),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-    );
-  }
-
-  Widget buildGridView(List<StudentModel> students) {
-    return GridView.builder(
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 10.0,
-        mainAxisSpacing: 10.0,
-        childAspectRatio: 1,
-      ),
-      itemCount: students.length,
-      padding: const EdgeInsets.all(15),
-      itemBuilder: (context, index) {
-        final student = students[index];
-
-        return Container(
-          decoration: BoxDecoration(
-              color: Colors.green[200],
-              borderRadius: BorderRadius.circular(20)),
-          child: InkWell(
-            onTap: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => ProfilePage(student)));
-            },
-            child: GridTile(
-              header: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 10),
-                  CircleAvatar(
-                    radius: 40,
-                    backgroundImage: student.image != null
-                        ? MemoryImage(student.image!)
-                        : null,
-                    child:
-                        student.image == null ? const Icon(Icons.person) : null,
-                  ),
-                  Text(
-                    student.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  // Text('Age: ${student.age}'),
-                ],
-              ),
-              child: Align(
-                alignment: Alignment.bottomRight,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (ctx) => EditStudentPage(student: student),
-                          ),
-                        );
-                      },
-                      icon: const Icon(
-                        Icons.edit,
-                        color: Colors.blue,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (ctx) => AlertDialog(
-                            title: const Text('Confirm Delete'),
-                            content: const Text(
-                                'Are you sure you want to delete this student?'),
-                            actions: [
-                              TextButton(
-                                child: const Text('No'),
-                                onPressed: () {
-                                  Navigator.of(ctx).pop();
-                                },
-                              ),
-                              TextButton(
-                                child: const Text('Yes'),
-                                onPressed: () async {
-                                  await deleteStudent(student.id!);
-                                  Navigator.of(ctx).pop();
-                                },
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                      icon: const Icon(
-                        Icons.delete,
-                        color: Colors.red,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget buildListView(List<StudentModel> students) {
-    return ListView.separated(
-      itemBuilder: (context, index) {
-        final student = students[index];
-        return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 7),
-          decoration: BoxDecoration(
-              color: Colors.green[200],
-              borderRadius: BorderRadius.circular(15)),
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          height: 100,
-          child: ListTile(
-            onTap: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => ProfilePage(student)));
-            },
-            title: Text(
-              student.name,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            leading: CircleAvatar(
-              radius: 30,
-              backgroundImage:
-                  student.image != null ? MemoryImage(student.image!) : null,
-              child: student.image == null ? const Icon(Icons.person) : null,
-            ),
-            // subtitle: Text('Age: ${student.age}'),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
+          Container(
+            color: Colors.blue[200],
+            width: 230,
+            child: Column(
               children: [
-                IconButton(
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 20.0),
+                  child: Column(
+                    children: [
+                      const CircleAvatar(
+                        radius: 40,
+                        backgroundImage:
+                            AssetImage('assets/images/school.jpeg'),
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        schoolName!,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(
+                  color: Colors.white,
+                  thickness: 5,
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    itemBuilder: (context, index) {
+                      final item = sidePanelItems[index];
+                      return ListTile(
+                        trailing: index == 1
+                            ? Transform.scale(
+                                scale: 0.7,
+                                child: Switch(
+                                    value: switchOn,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        switchOn = value;
+                                      });
+                                    }),
+                              )
+                            : null,
+                        leading: Icon(item['icon']),
+                        title: Text(item['title']),
+                        onTap: () {
+                          if (index != 1 && index != 2) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => item['screen'],
+                              ),
+                            );
+                          } else if (index == 2) {
+                            logoutFunction(context);
+                          }
+                        },
+                      );
+                    },
+                    itemCount: sidePanelItems.length,
+                  ),
+                ),
+                FloatingActionButton.extended(
                   onPressed: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (ctx) => EditStudentPage(student: student),
+                        builder: (context) => const AddStudentPage(),
                       ),
                     );
                   },
-                  icon: const Icon(
-                    Icons.edit,
-                    color: Colors.blue,
+                  label: const Text('Add Student'),
+                  icon: const Icon(Icons.add),
+                  backgroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                IconButton(
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                        title: const Text('Confirm Delete'),
-                        content: const Text(
-                            'Are you sure you want to delete this student?'),
-                        actions: [
-                          TextButton(
-                            child: const Text('No'),
-                            onPressed: () {
-                              Navigator.of(ctx).pop();
-                            },
-                          ),
-                          TextButton(
-                            child: const Text('Yes'),
-                            onPressed: () async {
-                              await deleteStudent(student.id!);
-                              Navigator.of(ctx).pop();
-                            },
-                          ),
-                        ],
+                const SizedBox(
+                  height: 15,
+                )
+              ],
+            ),
+          ),
+          Expanded(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
+                    controller: searchController,
+                    decoration: const InputDecoration(
+                      hintText: 'Search',
+                      prefixIcon: Padding(
+                        padding:
+                            EdgeInsets.symmetric(vertical: 4, horizontal: 20),
+                        child: Icon(Icons.search),
                       ),
-                    );
-                  },
-                  icon: const Icon(
-                    Icons.delete,
-                    color: Colors.red,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(25)),
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: ValueListenableBuilder<List<StudentDBModel>>(
+                    valueListenable: studentListNotifier,
+                    builder: (context, students, child) {
+                      if (searchController.text.isEmpty) {
+                        filteredStudents = students;
+                      }
+                      if (filteredStudents.isEmpty) {
+                        return const Center(
+                          child: Center(
+                              child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.school,
+                                size: 150,
+                                color: Colors.grey,
+                              ),
+                              SizedBox(
+                                height: 10,
+                              ),
+                              Text(
+                                'No students added',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          )),
+                        );
+                      }
+                      return switchOn
+                          ? GridViewBuilder(filteredStudents)
+                          : ListViewBuilder(filteredStudents);
+                    },
                   ),
                 ),
               ],
             ),
           ),
-        );
-      },
-      separatorBuilder: (context, index) => const Divider(
-        height: 5,
-        color: Colors.white,
+        ],
       ),
-      itemCount: students.length,
     );
   }
 }
